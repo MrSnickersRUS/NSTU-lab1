@@ -27,7 +27,7 @@ func NewArray() *Array {
 // Add добавляет элемент в конец массива
 func (a *Array) Add(value string) {
 	newNode := &ArrayNode{Data: value, Next: nil}
-	
+
 	if a.Head == nil {
 		a.Head = newNode
 	} else {
@@ -43,7 +43,7 @@ func (a *Array) Add(value string) {
 // AddAt добавляет элемент по указанному индексу
 func (a *Array) AddAt(value string, index int) error {
 	if index < 0 || index > a.Size {
-		return fmt.Errorf("Ошибка: индекс выходит за границы массива")
+		return fmt.Errorf("индекс выходит за границы массива")
 	}
 
 	newNode := &ArrayNode{Data: value, Next: nil}
@@ -66,7 +66,7 @@ func (a *Array) AddAt(value string, index int) error {
 // Get возвращает элемент по индексу
 func (a *Array) Get(index int) (string, error) {
 	if index < 0 || index >= a.Size {
-		return "", fmt.Errorf("Ошибка: индекс выходит за границы массива")
+		return "", fmt.Errorf("индекс выходит за границы массива")
 	}
 
 	current := a.Head
@@ -79,7 +79,7 @@ func (a *Array) Get(index int) (string, error) {
 // Remove удаляет элемент по индексу
 func (a *Array) Remove(index int) error {
 	if index < 0 || index >= a.Size {
-		return fmt.Errorf("Ошибка: индекс выходит за границы массива")
+		return fmt.Errorf("индекс выходит за границы массива")
 	}
 
 	if index == 0 {
@@ -98,7 +98,7 @@ func (a *Array) Remove(index int) error {
 // Replace заменяет элемент по индексу
 func (a *Array) Replace(index int, value string) error {
 	if index < 0 || index >= a.Size {
-		return fmt.Errorf("Ошибка: индекс выходит за границы массива")
+		return fmt.Errorf("индекс выходит за границы массива")
 	}
 
 	current := a.Head

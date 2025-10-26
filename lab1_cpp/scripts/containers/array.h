@@ -5,16 +5,11 @@
 
 using namespace std;
 
-// Структура для узла массива
-struct ArrayNode {
-    string data;
-    ArrayNode* next;
-};
-
-// Структура для динамического массива на основе связного списка
+// Структура для динамического массива
 struct Array {
-    ArrayNode* head = nullptr;
+    string* data = nullptr;
     size_t size = 0;
+    size_t capacity = 0;
     
     // Конструктор
     Array();

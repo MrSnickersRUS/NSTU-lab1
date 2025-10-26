@@ -30,7 +30,18 @@ map<string, Operation> operations = {
     {"ADDTAIL", ADDTAIL},
     {"ADDBEFORE", ADDBEFORE},
     {"ADDAFTER", ADDAFTER},
-    {"READ", READ}
+    {"READ", READ},
+    {"DELHEAD", DELHEAD},
+    {"DELTAIL", DELTAIL},
+    {"DELBEFORE", DELBEFORE},
+    {"DELAFTER", DELAFTER},
+    {"READREVERSE", READREVERSE},
+    {"GETHEAD", GETHEAD},
+    {"GETTAIL", GETTAIL},
+    {"GETINDEX", GETINDEX},
+    {"SIZE", SIZE},
+    {"ISEMPTY", ISEMPTY},
+    {"FINDINDEX", FINDINDEX}
 };
 
 // Глобальные хранилища для именованных структур данных
@@ -51,10 +62,8 @@ void saveAllContainers(const string& filePath) {
     // Сохраняем массивы
     for (const auto& pair : arrays) {
         outFile << "[ARRAY:" << pair.first << "]" << endl;
-        ArrayNode* current = pair.second.head;
-        while (current != nullptr) {
-            outFile << current->data << endl;
-            current = current->next;
+        for (size_t i = 0; i < pair.second.size; i++) {
+            outFile << pair.second.data[i] << endl;
         }
     }
     
@@ -213,10 +222,12 @@ void loadAllContainers(const string& filePath) {
     trees.clear();
     
     for (auto& pair : tempArrays) {
-        arrays[pair.first].head = pair.second.head;
+        arrays[pair.first].data = pair.second.data;
         arrays[pair.first].size = pair.second.size;
-        pair.second.head = nullptr;
+        arrays[pair.first].capacity = pair.second.capacity;
+        pair.second.data = nullptr;
         pair.second.size = 0;
+        pair.second.capacity = 0;
     }
     for (auto& pair : tempSingleLists) {
         singleLists[pair.first].head = pair.second.head;
@@ -488,6 +499,107 @@ void processQuery(const string& query, const string& filePath) {
                 } else {
                     throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
                 }
+            } else if (operation == DELHEAD) {
+                if (singleLists.find(containerName) != singleLists.end()) {
+                    if (removeFromHead(singleLists[containerName])) {
+                        if (singleLists[containerName].head == nullptr) {
+                            singleLists.erase(containerName);
+                        }
+                        isNeedSave = true;
+                    } else {
+                        throw runtime_error("Ошибка: список пуст");
+                    }
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == DELTAIL) {
+                if (singleLists.find(containerName) != singleLists.end()) {
+                    if (removeFromTail(singleLists[containerName])) {
+                        if (singleLists[containerName].head == nullptr) {
+                            singleLists.erase(containerName);
+                        }
+                        isNeedSave = true;
+                    } else {
+                        throw runtime_error("Ошибка: список пуст");
+                    }
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == DELBEFORE) {
+                string target;
+                ss >> target;
+                if (singleLists.find(containerName) != singleLists.end()) {
+                    if (removeBefore(singleLists[containerName], target)) {
+                        if (singleLists[containerName].head == nullptr) {
+                            singleLists.erase(containerName);
+                        }
+                        isNeedSave = true;
+                    } else {
+                        throw runtime_error("Ошибка: не удалось удалить элемент перед '" + target + "'");
+                    }
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == DELAFTER) {
+                string target;
+                ss >> target;
+                if (singleLists.find(containerName) != singleLists.end()) {
+                    if (removeAfter(singleLists[containerName], target)) {
+                        if (singleLists[containerName].head == nullptr) {
+                            singleLists.erase(containerName);
+                        }
+                        isNeedSave = true;
+                    } else {
+                        throw runtime_error("Ошибка: не удалось удалить элемент после '" + target + "'");
+                    }
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == GETHEAD) {
+                if (singleLists.find(containerName) != singleLists.end()) {
+                    cout << getHead(singleLists[containerName]) << endl;
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == GETTAIL) {
+                if (singleLists.find(containerName) != singleLists.end()) {
+                    cout << getTail(singleLists[containerName]) << endl;
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == GETINDEX) {
+                int index;
+                ss >> index;
+                if (singleLists.find(containerName) != singleLists.end()) {
+                    cout << getElement(singleLists[containerName], index) << endl;
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == SIZE) {
+                if (singleLists.find(containerName) != singleLists.end()) {
+                    cout << getSize(singleLists[containerName]) << endl;
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == ISEMPTY) {
+                if (singleLists.find(containerName) != singleLists.end()) {
+                    cout << (isEmpty(singleLists[containerName]) ? "TRUE" : "FALSE") << endl;
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == FINDINDEX) {
+                string value;
+                ss >> value;
+                if (singleLists.find(containerName) != singleLists.end()) {
+                    int index = findIndex(singleLists[containerName], value);
+                    if (index >= 0) {
+                        cout << index << endl;
+                    } else {
+                        cout << "Не найдено" << endl;
+                    }
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
             }
             break;
         case DOUBLE_LIST:
@@ -569,6 +681,113 @@ void processQuery(const string& query, const string& filePath) {
             } else if (operation == READ) {
                 if (doubleLists.find(containerName) != doubleLists.end()) {
                     readList(doubleLists[containerName]);
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == DELHEAD) {
+                if (doubleLists.find(containerName) != doubleLists.end()) {
+                    if (removeFromHead(doubleLists[containerName])) {
+                        if (doubleLists[containerName].head == nullptr) {
+                            doubleLists.erase(containerName);
+                        }
+                        isNeedSave = true;
+                    } else {
+                        throw runtime_error("Ошибка: список пуст");
+                    }
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == DELTAIL) {
+                if (doubleLists.find(containerName) != doubleLists.end()) {
+                    if (removeFromTail(doubleLists[containerName])) {
+                        if (doubleLists[containerName].head == nullptr) {
+                            doubleLists.erase(containerName);
+                        }
+                        isNeedSave = true;
+                    } else {
+                        throw runtime_error("Ошибка: список пуст");
+                    }
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == DELBEFORE) {
+                string target;
+                ss >> target;
+                if (doubleLists.find(containerName) != doubleLists.end()) {
+                    if (removeBefore(doubleLists[containerName], target)) {
+                        if (doubleLists[containerName].head == nullptr) {
+                            doubleLists.erase(containerName);
+                        }
+                        isNeedSave = true;
+                    } else {
+                        throw runtime_error("Ошибка: не удалось удалить элемент перед '" + target + "'");
+                    }
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == DELAFTER) {
+                string target;
+                ss >> target;
+                if (doubleLists.find(containerName) != doubleLists.end()) {
+                    if (removeAfter(doubleLists[containerName], target)) {
+                        if (doubleLists[containerName].head == nullptr) {
+                            doubleLists.erase(containerName);
+                        }
+                        isNeedSave = true;
+                    } else {
+                        throw runtime_error("Ошибка: не удалось удалить элемент после '" + target + "'");
+                    }
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == READREVERSE) {
+                if (doubleLists.find(containerName) != doubleLists.end()) {
+                    readListReverse(doubleLists[containerName]);
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == GETHEAD) {
+                if (doubleLists.find(containerName) != doubleLists.end()) {
+                    cout << getHead(doubleLists[containerName]) << endl;
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == GETTAIL) {
+                if (doubleLists.find(containerName) != doubleLists.end()) {
+                    cout << getTail(doubleLists[containerName]) << endl;
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == GETINDEX) {
+                int index;
+                ss >> index;
+                if (doubleLists.find(containerName) != doubleLists.end()) {
+                    cout << getElement(doubleLists[containerName], index) << endl;
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == SIZE) {
+                if (doubleLists.find(containerName) != doubleLists.end()) {
+                    cout << getSize(doubleLists[containerName]) << endl;
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == ISEMPTY) {
+                if (doubleLists.find(containerName) != doubleLists.end()) {
+                    cout << (isEmpty(doubleLists[containerName]) ? "TRUE" : "FALSE") << endl;
+                } else {
+                    throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
+                }
+            } else if (operation == FINDINDEX) {
+                string value;
+                ss >> value;
+                if (doubleLists.find(containerName) != doubleLists.end()) {
+                    int index = findIndex(doubleLists[containerName], value);
+                    if (index >= 0) {
+                        cout << index << endl;
+                    } else {
+                        cout << "Не найдено" << endl;
+                    }
                 } else {
                     throw runtime_error("Ошибка: контейнер '" + containerName + "' не найден");
                 }

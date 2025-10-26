@@ -21,12 +21,12 @@ func NewSingleList() *SingleList {
 // Add добавляет элемент в конец списка
 func (sl *SingleList) Add(value string) {
 	newNode := &SingleListNode{Data: value, Next: nil}
-	
+
 	if sl.Head == nil {
 		sl.Head = newNode
 		return
 	}
-	
+
 	current := sl.Head
 	for current.Next != nil {
 		current = current.Next
@@ -48,7 +48,7 @@ func (sl *SingleList) AddTail(value string) {
 // AddBefore добавляет элемент перед указанным значением
 func (sl *SingleList) AddBefore(target, value string) error {
 	if sl.Head == nil {
-		return fmt.Errorf("Ошибка: список пуст")
+		return fmt.Errorf("список пуст")
 	}
 
 	if sl.Head.Data == target {
@@ -62,7 +62,7 @@ func (sl *SingleList) AddBefore(target, value string) error {
 	}
 
 	if current.Next == nil {
-		return fmt.Errorf("Ошибка: элемент '%s' не найден", target)
+		return fmt.Errorf("элемент '%s' не найден", target)
 	}
 
 	newNode := &SingleListNode{Data: value, Next: current.Next}
@@ -78,7 +78,7 @@ func (sl *SingleList) AddAfter(target, value string) error {
 	}
 
 	if current == nil {
-		return fmt.Errorf("Ошибка: элемент '%s' не найден", target)
+		return fmt.Errorf("элемент '%s' не найден", target)
 	}
 
 	newNode := &SingleListNode{Data: value, Next: current.Next}
@@ -86,10 +86,10 @@ func (sl *SingleList) AddAfter(target, value string) error {
 	return nil
 }
 
-// Remove удаляет элемент из списка
+// Remove удаляет элемент из списка по значению
 func (sl *SingleList) Remove(value string) error {
 	if sl.Head == nil {
-		return fmt.Errorf("Ошибка: список пуст")
+		return fmt.Errorf("список пуст")
 	}
 
 	if sl.Head.Data == value {
@@ -103,11 +103,86 @@ func (sl *SingleList) Remove(value string) error {
 	}
 
 	if current.Next == nil {
-		return fmt.Errorf("Ошибка: элемент '%s' не найден в списке", value)
+		return fmt.Errorf("элемент '%s' не найден в списке", value)
 	}
 
 	current.Next = current.Next.Next
 	return nil
+}
+
+// RemoveHead удаляет элемент с головы списка
+func (sl *SingleList) RemoveHead() error {
+	if sl.Head == nil {
+		return fmt.Errorf("список пуст")
+	}
+	sl.Head = sl.Head.Next
+	return nil
+}
+
+// RemoveTail удаляет элемент с хвоста списка
+func (sl *SingleList) RemoveTail() error {
+	if sl.Head == nil {
+		return fmt.Errorf("список пуст")
+	}
+
+	if sl.Head.Next == nil {
+		sl.Head = nil
+		return nil
+	}
+
+	current := sl.Head
+	for current.Next.Next != nil {
+		current = current.Next
+	}
+	current.Next = nil
+	return nil
+}
+
+// RemoveBefore удаляет элемент перед указанным значением
+func (sl *SingleList) RemoveBefore(target string) error {
+	if sl.Head == nil {
+		return fmt.Errorf("список пуст")
+	}
+
+	if sl.Head.Data == target || sl.Head.Next == nil {
+		return fmt.Errorf("недостаточно элементов в списке")
+	}
+
+	if sl.Head.Next.Data == target {
+		sl.Head = sl.Head.Next
+		return nil
+	}
+
+	prev := sl.Head
+	current := prev.Next
+
+	for current.Next != nil {
+		if current.Next.Data == target {
+			prev.Next = current.Next
+			return nil
+		}
+		prev = current
+		current = current.Next
+	}
+	return fmt.Errorf("элемент '%s' не найден или перед ним нет элемента", target)
+}
+
+// RemoveAfter удаляет элемент после указанного значения
+func (sl *SingleList) RemoveAfter(target string) error {
+	if sl.Head == nil {
+		return fmt.Errorf("список пуст")
+	}
+
+	current := sl.Head
+	for current != nil && current.Next != nil {
+		if current.Data == target {
+			current.Next = current.Next.Next
+			return nil
+		}
+		current = current.Next
+	}
+
+	return fmt.Errorf("элемент '%s' не найден или после него нет элемента", target)
 }
 
 // IsIn проверяет наличие элемента в списке
@@ -120,6 +195,71 @@ func (sl *SingleList) IsIn(value string) bool {
 		current = current.Next
 	}
 	return false
+}
+
+// FindIndex возвращает индекс элемента в списке (-1 если не найден)
+func (sl *SingleList) FindIndex(value string) int {
+	current := sl.Head
+	index := 0
+	for current != nil {
+		if current.Data == value {
+			return index
+		}
+		current = current.Next
+		index++
+	}
+	return -1
+}
+
+// GetElement возвращает элемент по индексу
+func (sl *SingleList) GetElement(index int) (string, error) {
+	if index < 0 {
+		return "", fmt.Errorf("индекс не может быть отрицательным")
+	}
+
+	current := sl.Head
+	currentIndex := 0
+	for current != nil {
+		if currentIndex == index {
+			return current.Data, nil
+		}
+		current = current.Next
+		currentIndex++
+	}
+
+	return "", fmt.Errorf("индекс %d выходит за границы списка", index)
+}
+
+// GetHead возвращает первый элемент (голову)
+func (sl *SingleList) GetHead() (string, error) {
+	if sl.Head == nil {
+		return "", fmt.Errorf("список пуст")
+	}
+	return sl.Head.Data, nil
+}
+
+// GetTail возвращает последний элемент (хвост)
+func (sl *SingleList) GetTail() (string, error) {
+	if sl.Head == nil {
+		return "", fmt.Errorf("список пуст")
+	}
+
+	current := sl.Head
+	for current.Next != nil {
+		current = current.Next
+	}
+	return current.Data, nil
+}
+
+// Size возвращает размер списка
+func (sl *SingleList) Size() int {
+	size := 0
+	current := sl.Head
+	for current != nil {
+		size++
+		current = current.Next
+	}
+	return size
 }
 
 // Read выводит все элементы списка

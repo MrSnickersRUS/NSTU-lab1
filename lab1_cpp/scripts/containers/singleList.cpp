@@ -68,7 +68,7 @@ bool addAfter(SingleList& list, const string& target, const string& value) {
     return false;
 }
 
-// Удаляет элемент из списка
+// Удаляет элемент из списка по значению
 bool removeFromList(SingleList& list, const string& value) {
     SingleListNode* current = list.head;
     SingleListNode* prev = nullptr;
@@ -89,6 +89,81 @@ bool removeFromList(SingleList& list, const string& value) {
     return false;
 }
 
+// Удаляет элемент с головы списка
+bool removeFromHead(SingleList& list) {
+    if (list.head == nullptr) {
+        return false;
+    }
+    SingleListNode* temp = list.head;
+    list.head = list.head->next;
+    delete temp;
+    return true;
+}
+
+// Удаляет элемент с хвоста списка
+bool removeFromTail(SingleList& list) {
+    if (list.head == nullptr) {
+        return false;
+    }
+    if (list.head->next == nullptr) {
+        delete list.head;
+        list.head = nullptr;
+        return true;
+    }
+    SingleListNode* current = list.head;
+    while (current->next->next != nullptr) {
+        current = current->next;
+    }
+    delete current->next;
+    current->next = nullptr;
+    return true;
+}
+
+// Удаляет элемент перед указанным значением
+bool removeBefore(SingleList& list, const string& target) {
+    if (list.head == nullptr || list.head->next == nullptr) {
+        return false;
+    }
+    // Если второй элемент - это target, удаляем первый
+    if (list.head->next->data == target) {
+        SingleListNode* temp = list.head;
+        list.head = list.head->next;
+        delete temp;
+        return true;
+    }
+    
+    SingleListNode* current = list.head->next;
+    SingleListNode* prevPrev = list.head;
+    
+    while (current->next != nullptr) {
+        if (current->next->data == target) {
+            SingleListNode* temp = current;
+            prevPrev->next = current->next;
+            delete temp;
+            return true;
+        }
+        prevPrev = current;
+        current = current->next;
+    }
+    return false;
+}
+
+// Удаляет элемент после указанного значения
+bool removeAfter(SingleList& list, const string& target) {
+    SingleListNode* current = list.head;
+    
+    while (current != nullptr && current->next != nullptr) {
+        if (current->data == target) {
+            SingleListNode* temp = current->next;
+            current->next = temp->next;
+            delete temp;
+            return true;
+        }
+        current = current->next;
+    }
+    return false;
+}
+
 // Проверяет, содержится ли элемент в списке
 bool isInList(const SingleList& list, const string& value) {
     SingleListNode* current = list.head;
@@ -99,6 +174,73 @@ bool isInList(const SingleList& list, const string& value) {
         current = current->next;
     }
     return false;
+}
+
+// Находит индекс элемента в списке
+int findIndex(const SingleList& list, const string& value) {
+    SingleListNode* current = list.head;
+    int index = 0;
+    while (current != nullptr) {
+        if (current->data == value) {
+            return index;
+        }
+        current = current->next;
+        index++;
+    }
+    return -1;  // элемент не найден
+}
+
+// Получает элемент по индексу
+string getElement(const SingleList& list, int index) {
+    if (index < 0) {
+        throw out_of_range("Индекс не может быть отрицательным");
+    }
+    SingleListNode* current = list.head;
+    int currentIndex = 0;
+    while (current != nullptr) {
+        if (currentIndex == index) {
+            return current->data;
+        }
+        current = current->next;
+        currentIndex++;
+    }
+    throw out_of_range("Индекс выходит за границы списка");
+}
+
+// Получает первый элемент (голову)
+string getHead(const SingleList& list) {
+    if (list.head == nullptr) {
+        throw runtime_error("Список пуст");
+    }
+    return list.head->data;
+}
+
+// Получает последний элемент (хвост)
+string getTail(const SingleList& list) {
+    if (list.head == nullptr) {
+        throw runtime_error("Список пуст");
+    }
+    SingleListNode* current = list.head;
+    while (current->next != nullptr) {
+        current = current->next;
+    }
+    return current->data;
+}
+
+// Получает размер списка
+int getSize(const SingleList& list) {
+    int size = 0;
+    SingleListNode* current = list.head;
+    while (current != nullptr) {
+        size++;
+        current = current->next;
+    }
+    return size;
+}
+
+// Проверяет, пуст ли список
+bool isEmpty(const SingleList& list) {
+    return list.head == nullptr;
 }
 
 // Читает список

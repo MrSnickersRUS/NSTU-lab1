@@ -1,41 +1,47 @@
 #include "array.h"
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 
+// Размер массива по умолчанию
+const size_t INITIAL_CAPACITY = 4;
+
 // Конструктор массива
-Array::Array() : head(nullptr), size(0) {}
+Array::Array() : data(nullptr), size(0), capacity(0) {}
 
 // Деструктор массива
 Array::~Array() {
     clearArray(*this);
 }
 
+// Вспомогательная функция для увеличения емкости массива
+void resizeArray(Array& array, size_t newCapacity) {
+    string* newData = new string[newCapacity];
+    for (size_t i = 0; i < array.size; i++) {
+        newData[i] = array.data[i];
+    }
+    delete[] array.data;
+    array.data = newData;
+    array.capacity = newCapacity;
+}
+
 // Очищает массив
 void clearArray(Array& array) {
-    while (array.head != nullptr) {
-        ArrayNode* temp = array.head;
-        array.head = array.head->next;
-        delete temp;
-    }
+    delete[] array.data;
+    array.data = nullptr;
     array.size = 0;
+    array.capacity = 0;
 }
 
 // Добавляет элемент в конец массива
 void addToArray(Array& array, const string& value) {
-    ArrayNode* newNode = new ArrayNode{value, nullptr};
-    
-    if (array.head == nullptr) {
-        array.head = newNode;
-    } else {
-        ArrayNode* current = array.head;
-        while (current->next != nullptr) {
-            current = current->next;
-        }
-        current->next = newNode;
+    if (array.size >= array.capacity) {
+        size_t newCapacity = (array.capacity == 0) ? INITIAL_CAPACITY : array.capacity * 2;
+        resizeArray(array, newCapacity);
     }
-    array.size++;
+    array.data[array.size++] = value;
 }
 
 // Добавляет элемент по индексу
@@ -44,19 +50,17 @@ void addToArrayAt(Array& array, const string& value, size_t index) {
         throw out_of_range("Индекс выходит за границы массива");
     }
     
-    ArrayNode* newNode = new ArrayNode{value, nullptr};
-    
-    if (index == 0) {
-        newNode->next = array.head;
-        array.head = newNode;
-    } else {
-        ArrayNode* current = array.head;
-        for (size_t i = 0; i < index - 1; i++) {
-            current = current->next;
-        }
-        newNode->next = current->next;
-        current->next = newNode;
+    if (array.size >= array.capacity) {
+        size_t newCapacity = (array.capacity == 0) ? INITIAL_CAPACITY : array.capacity * 2;
+        resizeArray(array, newCapacity);
     }
+    
+    // Сдвигаем элементы вправо
+    for (size_t i = array.size; i > index; i--) {
+        array.data[i] = array.data[i - 1];
+    }
+    
+    array.data[index] = value;
     array.size++;
 }
 
@@ -65,12 +69,7 @@ string getFromArray(const Array& array, size_t index) {
     if (index >= array.size) {
         throw out_of_range("Индекс выходит за границы массива");
     }
-    
-    ArrayNode* current = array.head;
-    for (size_t i = 0; i < index; i++) {
-        current = current->next;
-    }
-    return current->data;
+    return array.data[index];
 }
 
 // Удаляет элемент по индексу
@@ -79,21 +78,11 @@ void removeFromArray(Array& array, size_t index) {
         throw out_of_range("Индекс выходит за границы массива");
     }
     
-    ArrayNode* temp;
-    
-    if (index == 0) {
-        temp = array.head;
-        array.head = array.head->next;
-        delete temp;
-    } else {
-        ArrayNode* current = array.head;
-        for (size_t i = 0; i < index - 1; i++) {
-            current = current->next;
-        }
-        temp = current->next;
-        current->next = temp->next;
-        delete temp;
+    // Сдвигаем элементы влево
+    for (size_t i = index; i < array.size - 1; i++) {
+        array.data[i] = array.data[i + 1];
     }
+    
     array.size--;
 }
 
@@ -102,12 +91,7 @@ void replaceInArray(Array& array, size_t index, const string& value) {
     if (index >= array.size) {
         throw out_of_range("Индекс выходит за границы массива");
     }
-    
-    ArrayNode* current = array.head;
-    for (size_t i = 0; i < index; i++) {
-        current = current->next;
-    }
-    current->data = value;
+    array.data[index] = value;
 }
 
 // Возвращает длину массива
@@ -117,10 +101,8 @@ size_t getArrayLength(const Array& array) {
 
 // Читает массив
 void readArray(const Array& array) {
-    ArrayNode* current = array.head;
-    while (current != nullptr) {
-        cout << current->data << " ";
-        current = current->next;
+    for (size_t i = 0; i < array.size; i++) {
+        cout << array.data[i] << " ";
     }
     cout << endl;
 }
@@ -131,10 +113,8 @@ void saveArrayToFile(const Array& array, const string& filePath) {
     if (!outFile) {
         throw runtime_error("Ошибка: невозможно открыть файл для записи");
     }
-    ArrayNode* current = array.head;
-    while (current != nullptr) {
-        outFile << current->data << endl;
-        current = current->next;
+    for (size_t i = 0; i < array.size; i++) {
+        outFile << array.data[i] << endl;
     }
     outFile.close();
 }

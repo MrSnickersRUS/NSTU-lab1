@@ -12,7 +12,8 @@ enum Container {
 enum Operation {
     PUSH, DEL, GET, POP, INS, PRINT, ISMEMBER,
     REP, LEN, ADDHEAD, ADDTAIL, ADDBEFORE, ADDAFTER,
-    READ
+    READ, DELHEAD, DELTAIL, DELBEFORE, DELAFTER, 
+    READREVERSE, GETHEAD, GETTAIL, GETINDEX, SIZE, ISEMPTY, FINDINDEX
 };
 
 void processQuery(const string& query, const string& filePath);

@@ -23,7 +23,7 @@ func NewDoubleList() *DoubleList {
 // AddHead добавляет элемент в начало списка
 func (dl *DoubleList) AddHead(value string) {
 	newNode := &DoubleListNode{Data: value, Prev: nil, Next: dl.Head}
-	
+
 	if dl.Head == nil {
 		dl.Head = newNode
 		dl.Tail = newNode
@@ -36,7 +36,7 @@ func (dl *DoubleList) AddHead(value string) {
 // AddTail добавляет элемент в конец списка
 func (dl *DoubleList) AddTail(value string) {
 	newNode := &DoubleListNode{Data: value, Prev: dl.Tail, Next: nil}
-	
+
 	if dl.Tail == nil {
 		dl.Head = newNode
 		dl.Tail = newNode
@@ -54,11 +54,11 @@ func (dl *DoubleList) AddBefore(target, value string) error {
 	}
 
 	if current == nil {
-		return fmt.Errorf("Ошибка: элемент '%s' не найден", target)
+		return fmt.Errorf("элемент '%s' не найден", target)
 	}
 
 	newNode := &DoubleListNode{Data: value, Prev: current.Prev, Next: current}
-	
+
 	if current.Prev != nil {
 		current.Prev.Next = newNode
 	} else {
@@ -76,11 +76,11 @@ func (dl *DoubleList) AddAfter(target, value string) error {
 	}
 
 	if current == nil {
-		return fmt.Errorf("Ошибка: элемент '%s' не найден", target)
+		return fmt.Errorf("элемент '%s' не найден", target)
 	}
 
 	newNode := &DoubleListNode{Data: value, Prev: current, Next: current.Next}
-	
+
 	if current.Next != nil {
 		current.Next.Prev = newNode
 	} else {
@@ -90,7 +90,7 @@ func (dl *DoubleList) AddAfter(target, value string) error {
 	return nil
 }
 
-// Remove удаляет элемент из списка
+// Remove удаляет элемент из списка по значению
 func (dl *DoubleList) Remove(value string) error {
 	current := dl.Head
 	for current != nil && current.Data != value {
@@ -98,7 +98,7 @@ func (dl *DoubleList) Remove(value string) error {
 	}
 
 	if current == nil {
-		return fmt.Errorf("Ошибка: элемент '%s' не найден в списке", value)
+		return fmt.Errorf("элемент '%s' не найден в списке", value)
 	}
 
 	if current.Prev != nil {
@@ -116,6 +116,78 @@ func (dl *DoubleList) Remove(value string) error {
 	return nil
 }
 
+// RemoveHead удаляет элемент с головы списка
+func (dl *DoubleList) RemoveHead() error {
+	if dl.Head == nil {
+		return fmt.Errorf("список пуст")
+	}
+
+	dl.Head = dl.Head.Next
+	if dl.Head != nil {
+		dl.Head.Prev = nil
+	} else {
+		dl.Tail = nil
+	}
+	return nil
+}
+
+// RemoveTail удаляет элемент с хвоста списка
+func (dl *DoubleList) RemoveTail() error {
+	if dl.Tail == nil {
+		return fmt.Errorf("список пуст")
+	}
+
+	dl.Tail = dl.Tail.Prev
+	if dl.Tail != nil {
+		dl.Tail.Next = nil
+	} else {
+		dl.Head = nil
+	}
+	return nil
+}
+
+// RemoveBefore удаляет элемент перед указанным значением
+func (dl *DoubleList) RemoveBefore(target string) error {
+	current := dl.Head
+
+	for current != nil {
+		if current.Data == target && current.Prev != nil {
+			toDelete := current.Prev
+			if toDelete.Prev != nil {
+				toDelete.Prev.Next = current
+			} else {
+				dl.Head = current
+			}
+			current.Prev = toDelete.Prev
+			return nil
+		}
+		current = current.Next
+	}
+
+	return fmt.Errorf("элемент '%s' не найден или перед ним нет элемента", target)
+}
+
+// RemoveAfter удаляет элемент после указанного значения
+func (dl *DoubleList) RemoveAfter(target string) error {
+	current := dl.Head
+
+	for current != nil {
+		if current.Data == target && current.Next != nil {
+			toDelete := current.Next
+			if toDelete.Next != nil {
+				toDelete.Next.Prev = current
+			} else {
+				dl.Tail = current
+			}
+			current.Next = toDelete.Next
+			return nil
+		}
+		current = current.Next
+	}
+
+	return fmt.Errorf("элемент '%s' не найден или после него нет элемента", target)
+}
+
 // IsIn проверяет наличие элемента в списке
 func (dl *DoubleList) IsIn(value string) bool {
 	current := dl.Head
@@ -128,7 +200,21 @@ func (dl *DoubleList) IsIn(value string) bool {
 	return false
 }
 
-// Read выводит все элементы списка
+// FindIndex возвращает индекс элемента в списке (-1 если не найден)
+func (dl *DoubleList) FindIndex(value string) int {
+	current := dl.Head
+	index := 0
+	for current != nil {
+		if current.Data == value {
+			return index
+		}
+		current = current.Next
+		index++
+	}
+	return -1
+}
+
+// Read выводит все элементы списка (прямой порядок)
 func (dl *DoubleList) Read() {
 	current := dl.Head
 	for current != nil {
@@ -136,6 +222,62 @@ func (dl *DoubleList) Read() {
 		current = current.Next
 	}
 	fmt.Println()
+}
+
+// ReadReverse выводит все элементы списка (обратный порядок)
+func (dl *DoubleList) ReadReverse() {
+	current := dl.Tail
+	for current != nil {
+		fmt.Print(current.Data, " ")
+		current = current.Prev
+	}
+	fmt.Println()
+}
+
+// GetElement возвращает элемент по индексу
+func (dl *DoubleList) GetElement(index int) (string, error) {
+	if index < 0 {
+		return "", fmt.Errorf("индекс не может быть отрицательным")
+	}
+
+	current := dl.Head
+	currentIndex := 0
+	for current != nil {
+		if currentIndex == index {
+			return current.Data, nil
+		}
+		current = current.Next
+		currentIndex++
+	}
+
+	return "", fmt.Errorf("индекс %d выходит за границы списка", index)
+}
+
+// GetHead возвращает первый элемент (голову)
+func (dl *DoubleList) GetHead() (string, error) {
+	if dl.Head == nil {
+		return "", fmt.Errorf("список пуст")
+	}
+	return dl.Head.Data, nil
+}
+
+// GetTail возвращает последний элемент (хвост)
+func (dl *DoubleList) GetTail() (string, error) {
+	if dl.Tail == nil {
+		return "", fmt.Errorf("список пуст")
+	}
+	return dl.Tail.Data, nil
+}
+
+// Size возвращает размер списка
+func (dl *DoubleList) Size() int {
+	size := 0
+	current := dl.Head
+	for current != nil {
+		size++
+		current = current.Next
+	}
+	return size
 }
 
 // ToSlice преобразует список в срез строк
